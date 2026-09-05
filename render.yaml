@@ -12,9 +12,7 @@ services:
       - key: PORT
         value: 5000
       - key: DATABASE_URL
-        fromDatabase:
-          name: lifeos-db
-          property: connectionString
+        sync: false
       - key: CLIENT_URL
         sync: false
       - key: GROQ_API_KEY
@@ -35,9 +33,3 @@ services:
         sync: false
       - key: SMTP_FROM
         value: LifeOS Deadline Alerts <alerts@lifeos.ai>
-
-databases:
-  - name: lifeos-db
-    databaseName: lifeos
-    user: lifeos_user
-    plan: free

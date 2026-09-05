@@ -1,0 +1,33 @@
+services:
+  - type: web
+    name: lifeos-system
+    env: node
+    buildCommand: npm run build
+    startCommand: npm start
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: CLIENT_URL
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: AI_PROVIDER
+        value: groq
+      - key: AI_MODEL
+        value: openai/gpt-oss-120b
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        value: LifeOS Deadline Alerts <alerts@lifeos.ai>

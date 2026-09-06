@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "backend": "tsx watch src/server.ts",
-    "build": "prisma generate && prisma db push --accept-data-loss && tsc",
-    "start": "node --max-old-space-size=256 dist/server.js",
+    "build": "prisma generate && tsc",
+    "start": "npx prisma db push --accept-data-loss || true && node --max-old-space-size=256 dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",

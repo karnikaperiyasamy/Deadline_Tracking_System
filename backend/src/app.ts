@@ -71,10 +71,10 @@ app.use('/api', routes);
 
 // Serve Frontend Static Build if available (Unified Server Mode)
 const possibleDistPaths = [
+  path.resolve(process.cwd(), 'frontend/dist'),
+  path.resolve(process.cwd(), 'dist'),
   path.resolve(__dirname, '../../frontend/dist'),
   path.resolve(__dirname, '../frontend/dist'),
-  path.resolve(process.cwd(), 'frontend/dist'),
-  path.resolve(process.cwd(), '../frontend/dist'),
 ];
 
 let activeDistPath: string | null = null;

@@ -81,6 +81,9 @@ if (activeDistPath) {
     if (/\.(js|css|png|jpg|jpeg|gif|ico|json|svg|woff2?|ttf|eot)$/i.test(req.path)) {
       return res.status(404).send('Asset not found');
     }
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(path.join(activeDistPath, 'index.html'));
   });
 } else {

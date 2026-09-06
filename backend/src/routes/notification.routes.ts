@@ -9,5 +9,6 @@ router.use(authenticateJWT);
 router.get('/', NotificationController.getNotifications);
 router.patch('/read-all', NotificationController.markAllRead);
 router.patch('/:id/read', NotificationController.markRead);
+router.post('/test-email', NotificationController.sendTestEmailReminder);
 
 export default router;

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { notificationsApi } from '../api/notifications.api';
 import { NotificationItem } from '../types';
 import { Skeleton } from '../components/ui/Skeleton';
-import { Bell, CheckCheck, AlertCircle, Sparkles, Clock, CheckCircle2 } from 'lucide-react';
+import { Bell, CheckCheck, Mail, Send, CheckCircle2 } from 'lucide-react';
 
 export const NotificationsPage: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [sendingMail, setSendingMail] = useState(false);
+  const [mailFeedback, setMailFeedback] = useState<string | null>(null);
 
   const fetchNotifications = async () => {
     try {
@@ -36,6 +38,19 @@ export const NotificationsPage: React.FC = () => {
     fetchNotifications();
   };
 
+  const handleSendTestEmail = async () => {
+    try {
+      setSendingMail(true);
+      setMailFeedback(null);
+      const res = await notificationsApi.sendTestEmail();
+      setMailFeedback(`Email reminder successfully sent to ${res.emailSentTo}`);
+    } catch (err: any) {
+      setMailFeedback(err.message || 'Failed to dispatch test email');
+    } finally {
+      setSendingMail(false);
+    }
+  };
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -44,19 +59,37 @@ export const NotificationsPage: React.FC = () => {
             <Bell className="w-6 h-6 text-blue-400" />
             Notification Center
           </h1>
-          <p className="text-sm text-slate-400">Automated system alerts, approaching deadlines, and AI insights</p>
+          <p className="text-sm text-slate-400">Automated system alerts, approaching deadlines, and email reminders</p>
         </div>
 
-        {unreadCount > 0 && (
+        <div className="flex items-center gap-3">
           <button
-            onClick={handleMarkAllRead}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600/30 text-xs font-bold rounded-xl border border-blue-500/30 transition-colors self-start sm:self-auto"
+            onClick={handleSendTestEmail}
+            disabled={sendingMail}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95"
           >
-            <CheckCheck className="w-4 h-4" />
-            Mark All as Read ({unreadCount})
+            {sendingMail ? <Send className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+            {sendingMail ? 'Sending...' : 'Send Work Digest Email Now'}
           </button>
-        )}
+
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-slate-300 hover:text-white text-xs font-bold rounded-xl border border-slate-700 transition-colors"
+            >
+              <CheckCheck className="w-4 h-4" />
+              Mark Read ({unreadCount})
+            </button>
+          )}
+        </div>
       </div>
+
+      {mailFeedback && (
+        <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center gap-3 text-emerald-400 text-xs font-semibold">
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <span>{mailFeedback}</span>
+        </div>
+      )}
 
       {loading ? (
         <div className="space-y-3">

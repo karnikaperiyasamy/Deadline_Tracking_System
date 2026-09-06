@@ -64,22 +64,35 @@ app.use((req, res, next) => {
 app.use('/api', routes);
 
 // Serve Frontend Static Build if available (Unified Server Mode)
-const frontendDistPath = path.resolve(__dirname, '../../frontend/dist');
-const altDistPath = path.resolve(process.cwd(), 'frontend/dist');
+const possibleDistPaths = [
+  path.resolve(__dirname, '../../frontend/dist'),
+  path.resolve(__dirname, '../frontend/dist'),
+  path.resolve(process.cwd(), 'frontend/dist'),
+  path.resolve(process.cwd(), '../frontend/dist'),
+];
 
-const activeDistPath = fs.existsSync(frontendDistPath)
-  ? frontendDistPath
-  : fs.existsSync(altDistPath)
-  ? altDistPath
-  : null;
+let activeDistPath: string | null = null;
+for (const p of possibleDistPaths) {
+  if (fs.existsSync(p) && fs.existsSync(path.join(p, 'index.html'))) {
+    activeDistPath = p;
+    break;
+  }
+}
 
 if (activeDistPath) {
   logger.info(`Unified Server Mode: Serving static frontend build from ${activeDistPath}`);
+
+  const assetsPath = path.join(activeDistPath, 'assets');
+  if (fs.existsSync(assetsPath)) {
+    app.use('/assets', express.static(assetsPath, { maxAge: '1y', immutable: true }));
+  }
+
   app.use(express.static(activeDistPath));
+
   app.get('*', (req, res, next) => {
     if (req.originalUrl.startsWith('/api')) return next();
     if (/\.(js|css|png|jpg|jpeg|gif|ico|json|svg|woff2?|ttf|eot)$/i.test(req.path)) {
-      return res.status(404).send('Asset not found');
+      return res.status(404).type('text/plain').send('Asset not found');
     }
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');

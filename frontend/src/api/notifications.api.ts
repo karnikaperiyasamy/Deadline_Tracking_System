@@ -20,4 +20,9 @@ export const notificationsApi = {
   markAllRead: async (): Promise<void> => {
     await apiClient.patch('/notifications/read-all');
   },
+
+  sendTestEmail: async (): Promise<{ emailSentTo: string }> => {
+    const response = await apiClient.post<ApiResponse<{ emailSentTo: string }>>('/notifications/test-email');
+    return response.data.data!;
+  },
 };

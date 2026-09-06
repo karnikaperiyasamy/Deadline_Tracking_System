@@ -1,18 +1,21 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import {
   Sparkles,
   Clock,
-  ShieldAlert,
   BrainCircuit,
-  CalendarDays,
   ListTree,
   ArrowRight,
-  CheckCircle2,
-  Lock,
 } from 'lucide-react';
 
 export const LandingPage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
       {/* Header / Navigation */}
@@ -57,7 +60,7 @@ export const LandingPage: React.FC = () => {
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-100 leading-tight">
             Master Every Deadline with <br />
             <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-              Real Artificial Intelligence
+              Real Groq Artificial Intelligence
             </span>
           </h1>
 
@@ -94,7 +97,6 @@ export const LandingPage: React.FC = () => {
           </div>
 
           <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-2xl space-y-6">
-            {/* Fake Preview Grid matching actual dashboard styling */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
                 <span className="text-xs text-slate-400 font-semibold">Total Tasks</span>

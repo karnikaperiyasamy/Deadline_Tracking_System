@@ -78,6 +78,9 @@ if (activeDistPath) {
   app.use(express.static(activeDistPath));
   app.get('*', (req, res, next) => {
     if (req.originalUrl.startsWith('/api')) return next();
+    if (/\.(js|css|png|jpg|jpeg|gif|ico|json|svg|woff2?|ttf|eot)$/i.test(req.path)) {
+      return res.status(404).send('Asset not found');
+    }
     res.sendFile(path.join(activeDistPath, 'index.html'));
   });
 } else {

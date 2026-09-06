@@ -22,11 +22,17 @@ app.use(
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || config.clientUrls.includes(origin) || config.env === 'development') {
+      if (
+        !origin ||
+        config.env === 'development' ||
+        config.clientUrls.includes(origin) ||
+        config.clientUrls.includes('*') ||
+        origin.includes('onrender.com')
+      ) {
         callback(null, true);
       } else {
         logger.warn(`Blocked by CORS: ${origin}`);
-        callback(new Error('CORS access disallowed for this origin'));
+        callback(null, false);
       }
     },
     credentials: true,

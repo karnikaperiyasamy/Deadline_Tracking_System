@@ -9,10 +9,14 @@ export class CronService {
   static initDailyCron() {
     logger.info('Initializing Daily 4:00 PM Work Alert Scheduler...');
 
-    // Run check every minute
-    setInterval(() => {
+    // Run check every 5 minutes and unref timer to avoid memory leaks
+    const timer = setInterval(() => {
       this.checkAndSend4PMCron();
-    }, 60 * 1000);
+    }, 5 * 60 * 1000);
+
+    if (timer.unref) {
+      timer.unref();
+    }
   }
 
   private static async checkAndSend4PMCron() {
@@ -31,12 +35,20 @@ export class CronService {
   static async dispatchDailyWorkSummaries() {
     try {
       const users = await prisma.user.findMany({
-        include: {
+        select: {
+          email: true,
+          name: true,
           tasks: {
             where: {
               status: { in: [Status.TODO, Status.IN_PROGRESS] },
             },
+            select: {
+              title: true,
+              dueDate: true,
+              priority: true,
+            },
             orderBy: { dueDate: 'asc' },
+            take: 5,
           },
         },
       });
@@ -52,7 +64,7 @@ export class CronService {
           taskSummaryHtml = `<p style="color: #10b981; font-weight: bold;">🎉 All tasks are currently completed! Excellent work.</p>`;
         } else {
           taskSummaryHtml = `<ul style="padding-left: 20px; color: #cbd5e1;">` +
-            pendingTasks.slice(0, 5).map((t) => 
+            pendingTasks.map((t) => 
               `<li style="margin-bottom: 8px;">
                 <strong>${t.title}</strong> — Due: ${t.dueDate.toLocaleString()} (${t.priority} Priority)
                </li>`

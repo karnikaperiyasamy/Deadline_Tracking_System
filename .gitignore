@@ -16,6 +16,7 @@ node_modules/
 dist/
 build/
 .output/
+!frontend/dist
 
 # Logs
 logs/

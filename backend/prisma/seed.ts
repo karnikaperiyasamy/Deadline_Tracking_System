@@ -9,11 +9,11 @@ async function main() {
   const demoPassword = await bcrypt.hash('DemoPassword123!', 10);
 
   const user = await prisma.user.upsert({
-    where: { email: 'demo@lifeos.ai' },
+    where: { email: 'srinithigaperiyasamy@gmail.com' },
     update: {},
     create: {
-      email: 'demo@lifeos.ai',
-      name: 'Demo Architect',
+      email: 'srinithigaperiyasamy@gmail.com',
+      name: 'Srinithiga Periyasamy',
       passwordHash: demoPassword,
       settings: {
         create: {

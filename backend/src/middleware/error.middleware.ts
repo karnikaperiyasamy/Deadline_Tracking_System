@@ -19,11 +19,14 @@ export const errorHandler = (
     return sendError(res, err.errors?.[0]?.message || 'Validation error', 400, 'VALIDATION_ERROR');
   }
 
-  // Handle Prisma Database Connection Errors
-  if (err.code && (err.code.startsWith('P100') || err.code === 'P1012')) {
+  // Handle Prisma Database Connection or Authentication Errors
+  if (
+    (err.code && (err.code.startsWith('P100') || err.code === 'P1012')) ||
+    (err.message && err.message.includes('Authentication failed'))
+  ) {
     return sendError(
       res,
-      'Database Connection Failure: Could not connect to PostgreSQL server. Please check DATABASE_URL in backend/.env.',
+      'Database Authentication Failure: The DATABASE_URL environment variable is referencing invalid credentials or an old database. Please update DATABASE_URL in your Render Web Service Environment settings to point to your free Neon.tech or Supabase PostgreSQL database.',
       500,
       'DATABASE_CONNECTION_ERROR'
     );
@@ -34,7 +37,7 @@ export const errorHandler = (
 
   return sendError(
     res,
-    process.env.NODE_ENV === 'production' ? 'An unexpected error occurred' : message,
+    process.env.NODE_ENV === 'production' ? message : message,
     statusCode,
     'SERVER_ERROR'
   );

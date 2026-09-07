@@ -17,6 +17,7 @@ dist/
 build/
 .output/
 !frontend/dist
+!backend/dist/public
 
 # Logs
 logs/

@@ -18,6 +18,9 @@ export class EmailService {
           user: config.smtp.user,
           pass: config.smtp.pass,
         },
+        tls: {
+          rejectUnauthorized: false,
+        },
       });
     } else {
       logger.info('No custom SMTP provided. Creating automated test email transporter...');

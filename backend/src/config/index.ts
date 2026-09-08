@@ -41,10 +41,10 @@ export const config = {
     model: readEnv('AI_MODEL') || 'openai/gpt-oss-120b',
   },
   smtp: {
-    host: readEnv('SMTP_HOST'),
+    host: readEnv('SMTP_HOST') || 'smtp.gmail.com',
     port: parseInt(readEnv('SMTP_PORT') || '587', 10),
-    user: readEnv('SMTP_USER'),
-    pass: readEnv('SMTP_PASS', { stripSpaces: true }),
-    from: readEnv('SMTP_FROM') || '"LifeOS Deadline Alerts" <alerts@lifeos.ai>',
+    user: readEnv('SMTP_USER') || 'karnikap376@gmail.com',
+    pass: readEnv('SMTP_PASS', { stripSpaces: true }) || 'emzswvazajwkeoqi',
+    from: readEnv('SMTP_FROM') || '"LifeOS Deadline Alerts" <karnikap376@gmail.com>',
   },
 };

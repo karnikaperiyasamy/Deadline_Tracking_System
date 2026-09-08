@@ -12,13 +12,24 @@ const readEnv = (key: string, opts?: { stripSpaces?: boolean }) => {
   return opts?.stripSpaces ? trimmed.replace(/\s+/g, '') : trimmed;
 };
 
+const defaultNeonUrl =
+  'postgresql://neondb_owner:npg_zriZkC1WQph9@ep-hidden-shape-b3qm86ks-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&connect_timeout=15';
+
+const getDatabaseUrl = () => {
+  const url = readEnv('DATABASE_URL');
+  if (!url || url.includes('skillbridge') || url.includes('dpg-dabv7k6k1f9s73dlugog')) {
+    return defaultNeonUrl;
+  }
+  return url;
+};
+
 export const config = {
   env: readEnv('NODE_ENV') || 'development',
   port: parseInt(readEnv('PORT') || '5000', 10),
   clientUrls: readEnv('CLIENT_URL')
     ? readEnv('CLIENT_URL').split(',').map((url) => url.trim())
     : ['http://localhost:5173'],
-  databaseUrl: readEnv('DATABASE_URL') || 'postgresql://postgres:postgres@localhost:5432/lifeos?schema=public',
+  databaseUrl: getDatabaseUrl(),
   jwt: {
     secret: readEnv('JWT_SECRET') || 'fallback_jwt_secret_lifeos_dev',
     expiresIn: readEnv('JWT_EXPIRES_IN') || '7d',

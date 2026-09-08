@@ -13,6 +13,8 @@ services:
         value: 5000
       - key: CLIENT_URL
         value: https://lifeos-system.onrender.com
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_zriZkC1WQph9@ep-hidden-shape-b3qm86ks-pooler.c-4.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&connect_timeout=15
       - key: GROQ_API_KEY
         sync: false
       - key: AI_PROVIDER

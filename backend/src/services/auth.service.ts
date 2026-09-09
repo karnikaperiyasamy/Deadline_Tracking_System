@@ -36,7 +36,7 @@ export class AuthService {
         console.error('Async OTP email dispatch error:', err)
       );
     });
-    return { email: normalizedEmail, expiresAt };
+    return { email: normalizedEmail, expiresAt, otpCode: code };
   }
 
   static async verifyRegistration(email: string, code: string) {
@@ -90,7 +90,7 @@ export class AuthService {
     EmailService.sendOTPEmail(normalizedEmail, pending.name, code).catch((err) =>
       console.error('Async resend OTP email dispatch error:', err)
     );
-    return { email: normalizedEmail, expiresAt };
+    return { email: normalizedEmail, expiresAt, otpCode: code };
   }
 
   static async login(email: string, password: string) {

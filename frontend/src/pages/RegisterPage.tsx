@@ -43,9 +43,14 @@ export const RegisterPage: React.FC = () => {
     setErrorMsg('');
     setSuccessMsg('');
     try {
-      const pending = await registerAuth(data.name, data.email, data.password);
+      const pending: any = await registerAuth(data.name, data.email, data.password);
       setPendingEmail(pending.email);
-      setSuccessMsg(`6-Digit Verification Code sent to ${pending.email}!`);
+      if (pending.otpCode) {
+        setVerificationCode(pending.otpCode);
+        setSuccessMsg(`Verification code sent to ${pending.email}! (Your OTP Code: ${pending.otpCode})`);
+      } else {
+        setSuccessMsg(`6-Digit Verification Code sent to ${pending.email}!`);
+      }
     } catch (err: any) {
       setErrorMsg(err.message || 'Registration failed.');
     }
@@ -75,8 +80,13 @@ export const RegisterPage: React.FC = () => {
     setSuccessMsg('');
     setIsResending(true);
     try {
-      await authApi.resendRegistrationOtp(pendingEmail);
-      setSuccessMsg(`New verification OTP code sent to ${pendingEmail}!`);
+      const pending: any = await authApi.resendRegistrationOtp(pendingEmail);
+      if (pending.otpCode) {
+        setVerificationCode(pending.otpCode);
+        setSuccessMsg(`New verification OTP code sent to ${pendingEmail}! (Your OTP: ${pending.otpCode})`);
+      } else {
+        setSuccessMsg(`New verification OTP code sent to ${pendingEmail}!`);
+      }
     } catch (err: any) {
       setErrorMsg(err.message || 'Could not resend the verification code.');
     } finally {

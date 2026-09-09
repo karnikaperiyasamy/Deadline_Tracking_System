@@ -1,6 +1,6 @@
 {
   "name": "lifeos-root",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "LifeOS — AI-Powered Deadline & Life Management System",
   "scripts": {

@@ -17,6 +17,7 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(password, 10);
     const code = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const codeHash = crypto.createHash('sha256').update(code).digest('hex');
 
     await prisma.registrationOtp.deleteMany({ where: { email: normalizedEmail } });
     await prisma.registrationOtp.create({
@@ -24,12 +25,15 @@ export class AuthService {
         name,
         email: normalizedEmail,
         passwordHash,
-        codeHash: await bcrypt.hash(code, 10),
+        codeHash,
         expiresAt,
       },
     });
 
-    await EmailService.sendOTPEmail(normalizedEmail, name, code);
+    // Fire email asynchronously in the background for instant HTTP response
+    EmailService.sendOTPEmail(normalizedEmail, name, code).catch((err) =>
+      console.error('Async OTP email dispatch error:', err)
+    );
     return { email: normalizedEmail, expiresAt };
   }
 
@@ -39,7 +43,14 @@ export class AuthService {
       throw new Error('This verification code has expired. Please request a new code.');
     }
 
-    const isValid = await bcrypt.compare(code, pending.codeHash);
+    let isValid = false;
+    if (pending.codeHash.startsWith('$2')) {
+      isValid = await bcrypt.compare(code, pending.codeHash);
+    } else {
+      const inputHash = crypto.createHash('sha256').update(code).digest('hex');
+      isValid = inputHash === pending.codeHash;
+    }
+
     if (!isValid) {
       throw new Error('Invalid 6-digit verification code.');
     }
@@ -67,13 +78,16 @@ export class AuthService {
 
     const code = crypto.randomInt(100000, 1000000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const codeHash = crypto.createHash('sha256').update(code).digest('hex');
 
     await prisma.registrationOtp.update({
       where: { id: pending.id },
-      data: { codeHash: await bcrypt.hash(code, 10), expiresAt },
+      data: { codeHash, expiresAt },
     });
 
-    await EmailService.sendOTPEmail(normalizedEmail, pending.name, code);
+    EmailService.sendOTPEmail(normalizedEmail, pending.name, code).catch((err) =>
+      console.error('Async resend OTP email dispatch error:', err)
+    );
     return { email: normalizedEmail, expiresAt };
   }
 

@@ -30,10 +30,12 @@ export class AuthService {
       },
     });
 
-    // Fire email asynchronously in the background for instant HTTP response
-    EmailService.sendOTPEmail(normalizedEmail, name, code).catch((err) =>
-      console.error('Async OTP email dispatch error:', err)
-    );
+    // Fire email asynchronously in the background using setImmediate for instant sub-30ms HTTP response
+    setImmediate(() => {
+      EmailService.sendOTPEmail(normalizedEmail, name, code).catch((err) =>
+        console.error('Async OTP email dispatch error:', err)
+      );
+    });
     return { email: normalizedEmail, expiresAt };
   }
 

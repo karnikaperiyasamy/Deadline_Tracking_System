@@ -8,42 +8,26 @@ export class EmailService {
   private static async getTransporter() {
     if (this.transporter) return this.transporter;
 
-    if (config.smtp.host && config.smtp.user) {
-      logger.info(`Initializing production SMTP transporter via ${config.smtp.host}:${config.smtp.port}`);
-      this.transporter = nodemailer.createTransport({
-        host: config.smtp.host,
-        port: config.smtp.port,
-        secure: config.smtp.port === 465,
-        auth: {
-          user: config.smtp.user,
-          pass: config.smtp.pass,
-        },
-        connectionTimeout: 8000,
-        socketTimeout: 8000,
-        tls: {
-          rejectUnauthorized: false,
-        },
-      });
-    } else {
-      logger.info('No custom SMTP provided. Creating automated test email transporter...');
-      try {
-        const testAccount = await nodemailer.createTestAccount();
-        this.transporter = nodemailer.createTransport({
-          host: 'smtp.ethereal.email',
-          port: 587,
-          secure: false,
-          auth: {
-            user: testAccount.user,
-            pass: testAccount.pass,
-          },
-        });
-      } catch (err) {
-        logger.warn('Failed to create test account, falling back to JSON stream log transporter.');
-        this.transporter = nodemailer.createTransport({
-          jsonTransport: true,
-        });
-      }
-    }
+    const host = config.smtp.host || 'smtp.gmail.com';
+    const user = config.smtp.user || 'karnikap376@gmail.com';
+    const pass = config.smtp.pass || 'emzswvazajwkeoqi';
+    const port = config.smtp.port || 587;
+
+    logger.info(`Initializing fast SMTP transporter via ${host}:${port}`);
+    this.transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: {
+        user,
+        pass,
+      },
+      connectionTimeout: 4000,
+      socketTimeout: 4000,
+      tls: {
+        rejectUnauthorized: false,
+      },
+    });
 
     return this.transporter;
   }

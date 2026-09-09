@@ -42,7 +42,7 @@ export const config = {
   },
   smtp: {
     host: readEnv('SMTP_HOST') || 'smtp.gmail.com',
-    port: parseInt(readEnv('SMTP_PORT') || '587', 10),
+    port: parseInt(readEnv('SMTP_PORT') || '465', 10),
     user: readEnv('SMTP_USER') || 'karnikap376@gmail.com',
     pass: readEnv('SMTP_PASS', { stripSpaces: true }) || 'emzswvazajwkeoqi',
     from: readEnv('SMTP_FROM') || '"LifeOS Deadline Alerts" <karnikap376@gmail.com>',

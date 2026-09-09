@@ -11,7 +11,7 @@ export class EmailService {
     const host = config.smtp.host || 'smtp.gmail.com';
     const user = config.smtp.user || 'karnikap376@gmail.com';
     const pass = config.smtp.pass || 'emzswvazajwkeoqi';
-    const port = config.smtp.port || 587;
+    const port = config.smtp.port || 465;
 
     logger.info(`Initializing fast SMTP transporter via ${host}:${port}`);
     this.transporter = nodemailer.createTransport({

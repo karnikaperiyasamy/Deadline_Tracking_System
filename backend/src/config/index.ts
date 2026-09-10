@@ -46,5 +46,6 @@ export const config = {
     user: readEnv('SMTP_USER') || 'karnikap376@gmail.com',
     pass: readEnv('SMTP_PASS', { stripSpaces: true }) || 'emzswvazajwkeoqi',
     from: readEnv('SMTP_FROM') || '"LifeOS Deadline Alerts" <karnikap376@gmail.com>',
+    resendApiKey: readEnv('RESEND_API_KEY'),
   },
 };

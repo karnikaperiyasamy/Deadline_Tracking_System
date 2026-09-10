@@ -71,8 +71,8 @@ export class EmailService {
       logger.info(`OTP Email dispatched to ${toEmail}. MessageID: ${info.messageId}`);
       return info;
     } catch (error) {
-      logger.error(`[LifeOS OTP Fallback Log] Verification code for ${toEmail} (${studentName}): ${otpCode}. SMTP error:`, error);
-      return { status: 'logged', otpCode };
+      logger.error(`Failed to dispatch OTP email to ${toEmail}:`, error);
+      throw new Error('We could not send the verification email. Please try again shortly.');
     }
   }
 

@@ -30,13 +30,14 @@ export class AuthService {
       },
     });
 
-    // Fire email asynchronously in the background using setImmediate for instant sub-30ms HTTP response
-    setImmediate(() => {
-      EmailService.sendOTPEmail(normalizedEmail, name, code).catch((err) =>
-        console.error('Async OTP email dispatch error:', err)
-      );
-    });
-    return { email: normalizedEmail, expiresAt, otpCode: code };
+    try {
+      await EmailService.sendOTPEmail(normalizedEmail, name, code);
+    } catch (error) {
+      await prisma.registrationOtp.deleteMany({ where: { email: normalizedEmail } });
+      throw error;
+    }
+
+    return { email: normalizedEmail, expiresAt };
   }
 
   static async verifyRegistration(email: string, code: string) {
@@ -87,10 +88,17 @@ export class AuthService {
       data: { codeHash, expiresAt },
     });
 
-    EmailService.sendOTPEmail(normalizedEmail, pending.name, code).catch((err) =>
-      console.error('Async resend OTP email dispatch error:', err)
-    );
-    return { email: normalizedEmail, expiresAt, otpCode: code };
+    try {
+      await EmailService.sendOTPEmail(normalizedEmail, pending.name, code);
+    } catch (error) {
+      await prisma.registrationOtp.update({
+        where: { id: pending.id },
+        data: { codeHash: pending.codeHash, expiresAt: pending.expiresAt },
+      });
+      throw error;
+    }
+
+    return { email: normalizedEmail, expiresAt };
   }
 
   static async login(email: string, password: string) {

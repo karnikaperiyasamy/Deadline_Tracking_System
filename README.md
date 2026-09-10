@@ -124,7 +124,9 @@ npm run dev
 - Frontend will open at `http://localhost:5173`
 - Backend API will run at `http://localhost:5000/api`
 
-During registration, LifeOS sends a six-digit verification code to the provided email. Enter the code on the registration screen to finish creating the account. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM` in `backend/.env` for email delivery.
+During registration, LifeOS sends a six-digit verification code to the provided email. Enter the code on the registration screen to finish creating the account. Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, and `SMTP_PASS` in `backend/.env` for email delivery. `SMTP_FROM` is optional and must use the same mailbox or a verified sender alias as `SMTP_USER`; if omitted, the authenticated SMTP user is used.
+
+For Render, set `SMTP_USER` to the Gmail address that owns the app password, `SMTP_PASS` to its Gmail app password without spaces, and either leave `SMTP_FROM` empty or set it to that same Gmail address. After changing these values, trigger a new deployment.
 
 ---
 

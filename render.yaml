@@ -32,4 +32,4 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: SMTP_FROM
-        value: LifeOS Deadline Alerts <alerts@lifeos.ai>
+        sync: false

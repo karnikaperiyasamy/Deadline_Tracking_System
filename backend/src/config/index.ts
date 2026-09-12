@@ -47,5 +47,6 @@ export const config = {
     pass: readEnv('SMTP_PASS', { stripSpaces: true }) || 'emzswvazajwkeoqi',
     from: readEnv('SMTP_FROM') || '"LifeOS Deadline Alerts" <karnikap376@gmail.com>',
     resendApiKey: readEnv('RESEND_API_KEY'),
+    brevoApiKey: readEnv('BREVO_API_KEY'),
   },
 };

@@ -34,6 +34,30 @@ export class EmailService {
   }
 
   private static async sendEmailGeneric(toEmail: string, subject: string, htmlContent: string) {
+    if (config.smtp.brevoApiKey) {
+      try {
+        const res = await axios.post(
+          'https://api.brevo.com/v3/smtp/email',
+          {
+            sender: { name: 'LifeOS Alerts', email: 'alerts@lifeos.ai' },
+            to: [{ email: toEmail }],
+            subject: subject,
+            htmlContent: htmlContent,
+          },
+          {
+            headers: {
+              'api-key': config.smtp.brevoApiKey,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        logger.info(`Email dispatched via Brevo HTTPS API to ${toEmail}. Subject: "${subject}". Response:`, res.data);
+        return res.data;
+      } catch (brevoErr: any) {
+        logger.warn('Brevo HTTPS API dispatch error:', brevoErr?.response?.data || brevoErr?.message);
+      }
+    }
+
     if (config.smtp.resendApiKey) {
       try {
         const res = await axios.post(
@@ -54,7 +78,7 @@ export class EmailService {
         logger.info(`Email dispatched via Resend HTTPS API to ${toEmail}. Subject: "${subject}". Response:`, res.data);
         return res.data;
       } catch (resendError: any) {
-        logger.warn('Resend HTTPS API dispatch failed, trying SMTP fallback:', resendError?.message || resendError);
+        logger.warn('Resend HTTPS API dispatch failed, trying SMTP fallback:', resendError?.response?.data || resendError?.message);
       }
     }
 

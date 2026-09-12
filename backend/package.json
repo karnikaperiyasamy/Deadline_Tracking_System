@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "backend": "tsx watch src/server.ts",
-    "build": "node ../scripts/run-with-env.js npx prisma generate && tsc",
+    "build": "tsc",
     "start": "node ../scripts/run-with-env.js node --max-old-space-size=256 dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",

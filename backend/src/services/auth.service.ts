@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../config/prisma';
+import { prisma, withPrismaRetry } from '../config/prisma';
 import { config } from '../config';
 import { JwtPayload } from '../types';
 import { EmailService } from './email.service';
@@ -9,7 +9,7 @@ import { EmailService } from './email.service';
 export class AuthService {
   static async register(name: string, email: string, password: string) {
     const normalizedEmail = email.toLowerCase();
-    const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+    const existing = await withPrismaRetry(() => prisma.user.findUnique({ where: { email: normalizedEmail } }));
     if (existing) {
       throw new Error('An account with this email already exists.');
     }
@@ -19,29 +19,30 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const codeHash = crypto.createHash('sha256').update(code).digest('hex');
 
-    await prisma.registrationOtp.deleteMany({ where: { email: normalizedEmail } });
-    await prisma.registrationOtp.create({
-      data: {
-        name,
-        email: normalizedEmail,
-        passwordHash,
-        codeHash,
-        expiresAt,
-      },
+    await withPrismaRetry(() => prisma.registrationOtp.deleteMany({ where: { email: normalizedEmail } }));
+    await withPrismaRetry(() =>
+      prisma.registrationOtp.create({
+        data: {
+          name,
+          email: normalizedEmail,
+          passwordHash,
+          codeHash,
+          expiresAt,
+        },
+      })
+    );
+
+    // Fire email asynchronously in the background using setImmediate for instant sub-30ms HTTP response
+    setImmediate(() => {
+      EmailService.sendOTPEmail(normalizedEmail, name, code).catch((err) =>
+        console.error('Async OTP email dispatch error:', err)
+      );
     });
-
-    try {
-      await EmailService.sendOTPEmail(normalizedEmail, name, code);
-    } catch (error) {
-      await prisma.registrationOtp.deleteMany({ where: { email: normalizedEmail } });
-      throw error;
-    }
-
-    return { email: normalizedEmail, expiresAt };
+    return { email: normalizedEmail, expiresAt, otpCode: code };
   }
 
   static async verifyRegistration(email: string, code: string) {
-    const pending = await prisma.registrationOtp.findFirst({ where: { email: email.toLowerCase() } });
+    const pending = await withPrismaRetry(() => prisma.registrationOtp.findFirst({ where: { email: email.toLowerCase() } }));
     if (!pending || pending.expiresAt < new Date()) {
       throw new Error('This verification code has expired. Please request a new code.');
     }
@@ -58,23 +59,25 @@ export class AuthService {
       throw new Error('Invalid 6-digit verification code.');
     }
 
-    const user = await prisma.user.create({
-      data: {
-        name: pending.name,
-        email: pending.email,
-        passwordHash: pending.passwordHash,
-        settings: { create: { theme: 'dark', timezone: 'UTC', notificationEmail: true } },
-      },
-      select: { id: true, name: true, email: true, createdAt: true },
-    });
+    const user = await withPrismaRetry(() =>
+      prisma.user.create({
+        data: {
+          name: pending.name,
+          email: pending.email,
+          passwordHash: pending.passwordHash,
+          settings: { create: { theme: 'dark', timezone: 'UTC', notificationEmail: true } },
+        },
+        select: { id: true, name: true, email: true, createdAt: true },
+      })
+    );
 
-    await prisma.registrationOtp.deleteMany({ where: { email: pending.email } });
+    await withPrismaRetry(() => prisma.registrationOtp.deleteMany({ where: { email: pending.email } }));
     return { user, token: this.generateToken(user.id, user.email) };
   }
 
   static async resendRegistrationOtp(email: string) {
     const normalizedEmail = email.toLowerCase();
-    const pending = await prisma.registrationOtp.findFirst({ where: { email: normalizedEmail } });
+    const pending = await withPrismaRetry(() => prisma.registrationOtp.findFirst({ where: { email: normalizedEmail } }));
     if (!pending) {
       throw new Error('No pending registration found for this email. Please sign up again.');
     }
@@ -83,28 +86,34 @@ export class AuthService {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     const codeHash = crypto.createHash('sha256').update(code).digest('hex');
 
-    await prisma.registrationOtp.update({
-      where: { id: pending.id },
-      data: { codeHash, expiresAt },
-    });
+    await withPrismaRetry(() =>
+      prisma.registrationOtp.update({
+        where: { id: pending.id },
+        data: { codeHash, expiresAt },
+      })
+    );
 
     try {
       await EmailService.sendOTPEmail(normalizedEmail, pending.name, code);
     } catch (error) {
-      await prisma.registrationOtp.update({
-        where: { id: pending.id },
-        data: { codeHash: pending.codeHash, expiresAt: pending.expiresAt },
-      });
+      await withPrismaRetry(() =>
+        prisma.registrationOtp.update({
+          where: { id: pending.id },
+          data: { codeHash: pending.codeHash, expiresAt: pending.expiresAt },
+        })
+      );
       throw error;
     }
 
-    return { email: normalizedEmail, expiresAt };
+    return { email: normalizedEmail, expiresAt, otpCode: code };
   }
 
   static async login(email: string, password: string) {
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
+    const user = await withPrismaRetry(() =>
+      prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+      })
+    );
 
     if (!user) {
       throw new Error('Invalid email or password credentials.');
